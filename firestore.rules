@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email == 'sopheakpat01@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      ); 
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // --- Matches ---
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true; // Branding needs to be public
+      allow write: if isAdmin();
+    }
+
+    match /students/{studentId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /classes/{classId} {
+      allow read: if isVerified();
+      allow write: if isAdmin();
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isVerified() && (isAdmin() || isOwner(existing().studentId));
+      allow create, update, delete: if isAdmin() && isValidInvoice(incoming());
+    }
+
+    match /employees/{empId} {
+      allow read: if isVerified();
+      allow write: if isAdmin();
+    }
+
+    match /grades/{gradeId} {
+      allow read: if isVerified() && (isAdmin() || isOwner(existing().studentId));
+      allow write: if isAdmin() || (isVerified() && exists(/databases/$(database)/documents/employees/$(request.auth.uid))); // Teachers can grade
+    }
+
+    // Catch-all for other collections in blueprint
+    match /gradeLevels/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /scholarships/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /serviceCategories/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /services/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /classPeriods/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /floors/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /employeePositions/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /employeeDepartments/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /publicHolidays/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /attendance/{id} { allow read: if isVerified(); allow write: if isAdmin(); }
+    match /messages/{id} { 
+      allow read: if isVerified() && (isOwner(existing().senderId) || isOwner(existing().receiverId));
+      allow create: if isVerified() && isOwner(incoming().senderId);
+    }
+
+    // --- Public Website ---
+    match /website_events/{id} {
+      allow read: if true; // Publicly readable
+      allow write: if isVerified() || isAdmin();
+    }
+    match /website_news/{id} {
+      allow read: if true; // Publicly readable
+      allow write: if isAdmin();
+    }
+    match /website_gallery/{id} {
+      allow read: if resource.data.isPublic == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /projects/{projectId} {
+      allow read: if isVerified();
+      allow write: if isAdmin();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if isVerified();
+      allow create: if isVerified();
+      allow update: if isVerified() && (isAdmin() || (incoming().assigneeId == request.auth.uid));
+      allow delete: if isAdmin();
+    }
+
+    match /announcements/{id} {
+      allow read: if isVerified();
+      allow write: if isAdmin();
+    }
+
+    match /expenses/{id} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}

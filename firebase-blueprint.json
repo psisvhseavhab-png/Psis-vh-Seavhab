@@ -1,0 +1,424 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user (Admin, Teacher, Student, Parent)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "teacher", "student", "parent"] },
+        "profilePic": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "role"]
+    },
+    "AcademicYear": {
+      "title": "Academic Year",
+      "description": "School year definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "year": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" }
+      },
+      "required": ["id", "year", "startDate", "endDate"]
+    },
+    "MainProgram": {
+      "title": "Main Program",
+      "description": "High level educational program",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "SubProgram": {
+      "title": "Sub Program",
+      "description": "Specific program under a main program",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "mainProgramId": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "language": { "type": "string" }
+      }
+    },
+    "Room": {
+      "title": "Room",
+      "description": "School room or classroom",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "floor": { "type": "string" },
+        "capacity": { "type": "number" },
+        "type": { "type": "string" }
+      }
+    },
+    "Family": {
+      "title": "Family",
+      "description": "Family profile grouping students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "familyCode": { "type": "string" },
+        "fatherName": { "type": "string" },
+        "fatherOccupation": { "type": "string" },
+        "motherName": { "type": "string" },
+        "motherOccupation": { "type": "string" },
+        "contact": { "type": "string" },
+        "telegramChatId": { "type": "string" }
+      }
+    },
+    "GradeLevel": {
+      "title": "Grade Level",
+      "description": "Specific grade or study level",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "subProgramId": { "type": "string" },
+        "name": { "type": "string" },
+        "nameKh": { "type": "string" },
+        "code": { "type": "string" }
+      }
+    },
+    "Class": {
+      "title": "Class",
+      "description": "Academic class group instances",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "gradeLevelId": { "type": "string" },
+        "roomId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "academicYear": { "type": "string" },
+        "shiftTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive"] }
+      }
+    },
+    "ClassPeriod": {
+      "title": "Class Period",
+      "description": "Timetable slots for classes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "schoolLevelId": { "type": "string" }
+      }
+    },
+    "Floor": {
+      "title": "Floor",
+      "description": "Building floors",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" }
+      }
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Staff member profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeCode": { "type": "string" },
+        "name": { "type": "string" },
+        "nameKh": { "type": "string" },
+        "gender": { "type": "string", "enum": ["Male", "Female"] },
+        "dob": { "type": "string" },
+        "positionId": { "type": "string" },
+        "departmentId": { "type": "string" },
+        "photo": { "type": "string" },
+        "contact": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "resigned"] },
+        "telegramChatId": { "type": "string" }
+      }
+    },
+    "EmployeePosition": {
+      "title": "Employee Position",
+      "description": "Job titles and roles",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "EmployeeDepartment": {
+      "title": "Employee Department",
+      "description": "Organizational departments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    },
+    "PublicHoliday": {
+      "title": "Public Holiday",
+      "description": "School holidays and events",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "fromDate": { "type": "string" },
+        "toDate": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "Scholarship": {
+      "title": "Scholarship",
+      "description": "Student scholarship records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "percent": { "type": "number" },
+        "type": { "type": "string" },
+        "duration": { "type": "string" }
+      }
+    },
+    "ServiceCategory": {
+      "title": "Service Category",
+      "description": "Category for school services (e.g. Tuition, Transport)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "SchoolService": {
+      "title": "School Service",
+      "description": "Individual billable service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "currency": { "type": "string", "default": "USD" }
+      }
+    },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "Fee collection record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["paid", "partial", "unpaid"] },
+        "date": { "type": "string" }
+      }
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Detailed student profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "classId": { "type": "string" },
+        "gender": { "type": "string", "enum": ["Male", "Female"] },
+        "dob": { "type": "string" },
+        "parentId": { "type": "string" },
+        "profilePic": { "type": "string" },
+        "telegramChatId": { "type": "string" }
+      },
+      "required": ["id", "name", "classId"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily attendance record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "object" }
+      }
+    },
+    "Grade": {
+      "title": "Grade",
+      "description": "Academic grade for a student",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "subject": { "type": "string" },
+        "score": { "type": "number" },
+        "term": { "type": "string" },
+        "date": { "type": "string" }
+      }
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Communication message",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "SystemSettings": {
+      "title": "System Settings",
+      "description": "Global school settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "telegramBotToken": { "type": "string" }
+      }
+    },
+    "WebsiteEvent": {
+      "title": "Website Event",
+      "description": "Events shown on the public website calendar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "time": { "type": "string" },
+        "location": { "type": "string" },
+        "description": { "type": "string" },
+        "image": { "type": "string" },
+        "category": { "type": "string", "enum": ["Academic", "Sports", "Culture", "Holiday"] },
+        "status": { "type": "string", "enum": ["Upcoming", "Past", "Cancelled"] }
+      }
+    },
+    "NewsPost": {
+      "title": "News Post",
+      "description": "News and announcements for the public website",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string", "enum": ["Achievement", "Announcement", "Student Life"] },
+        "author": { "type": "string" },
+        "image": { "type": "string" },
+        "status": { "type": "string", "enum": ["Published", "Draft"] },
+        "publishedAt": { "type": "string", "format": "date" }
+      }
+    },
+    "GalleryItem": {
+      "title": "Gallery Item",
+      "description": "Photographs for the website gallery",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "url": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isPublic": { "type": "boolean" },
+        "eventId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "category": { "type": "string" }
+      }
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Strategic school projects and initiatives",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["Planning", "Active", "On Hold", "Completed", "Cancelled"] },
+        "category": { "type": "string", "enum": ["Infrastructure", "Academic", "Administrative", "Student Event", "Technology"] },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "progress": { "type": "number" },
+        "budget": { "type": "number" },
+        "spent": { "type": "number" },
+        "managerId": { "type": "string" },
+        "teamIds": { "type": "array" },
+        "tasksCount": { "type": "number" },
+        "completedTasksCount": { "type": "number" },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Critical"] },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "BoardTask": {
+      "title": "Board Task",
+      "description": "Task in a workflow board",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
+        "assigneeId": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "tags": { "type": "array" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "System-wide announcement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "targetRole": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "School expense record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["paid", "pending"] }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "Basic user info" },
+    "/students/{studentId}": { "schema": "Student", "description": "Student profiles" },
+    "/classes/{classId}": { "schema": "Class", "description": "Class info" },
+    "/gradeLevels/{gradeLevelId}": { "schema": "GradeLevel", "description": "Grade info" },
+    "/scholarships/{scholarshipId}": { "schema": "Scholarship", "description": "Scholarships" },
+    "/serviceCategories/{catId}": { "schema": "ServiceCategory", "description": "Categories" },
+    "/services/{serviceId}": { "schema": "SchoolService", "description": "Services" },
+    "/invoices/{invoiceId}": { "schema": "Invoice", "description": "Fee records" },
+    "/classPeriods/{periodId}": { "schema": "ClassPeriod", "description": "Time slots" },
+    "/floors/{floorId}": { "schema": "Floor", "description": "Floors" },
+    "/employees/{empId}": { "schema": "Employee", "description": "Staff" },
+    "/employeePositions/{posId}": { "schema": "EmployeePosition", "description": "Positions" },
+    "/employeeDepartments/{depId}": { "schema": "EmployeeDepartment", "description": "Departments" },
+    "/publicHolidays/{holidayId}": { "schema": "PublicHoliday", "description": "Holidays" },
+    "/attendance/{attendanceId}": { "schema": "Attendance", "description": "Attendance history" },
+    "/grades/{gradeId}": { "schema": "Grade", "description": "Academic grades" },
+    "/messages/{messageId}": { "schema": "Message", "description": "Internal communication" },
+    "/settings/{settingId}": { "schema": "SystemSettings", "description": "Global settings" },
+    "/website_events/{eventId}": { "schema": "WebsiteEvent", "description": "Public events" },
+    "/website_news/{newsId}": { "schema": "NewsPost", "description": "Public news" },
+    "/website_gallery/{itemId}": { "schema": "GalleryItem", "description": "Public gallery photos" },
+    "/projects/{projectId}": { "schema": "Project", "description": "School projects" },
+    "/tasks/{taskId}": { "schema": "BoardTask", "description": "Workflow tasks" },
+    "/announcements/{annId}": { "schema": "Announcement", "description": "Announcements" },
+    "/expenses/{expId}": { "schema": "Expense", "description": "Expenses" }
+  }
+}

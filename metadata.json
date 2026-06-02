@@ -1,0 +1,12 @@
+{
+  "name": " PSIS-VH-management",
+  "description": "Official management platform for Paññāsāstra International School - Van Hong (PSIS VH), featuring real-time attendance, grade management, and student verification.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "firebase",
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
