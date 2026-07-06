@@ -1,15 +1,265 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#2563eb" />
-    <title>EduPulse - Smart Education Management</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pannasastra International School VAN HONG | សាលាបញ្ញាសាស្រ្តអន្តរជាតិ វណ្ណ ហុង</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruuy+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Kantumruuy Pro', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800 antialiased">
 
+    <!-- Header / Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://psisvh.vercel.app/logo.png" alt="PSIS Logo" class="h-14 w-auto object-contain">
+                <div class="flex flex-col">
+                    <span class="text-sm md:text-base font-bold text-blue-900 tracking-wide leading-tight">Pannasastra International School</span>
+                    <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">VAN HONG</span>
+                    <span class="text-[10px] md:text-xs text-gray-500 font-medium leading-tight">សាលាបញ្ញាសាស្រ្តអន្តរជាតិ វណ្ណ ហុង</span>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#announcement" class="text-gray-600 hover:text-blue-900 font-medium transition">New Term</a>
+                <a href="#curriculum" class="text-gray-600 hover:text-blue-900 font-medium transition">Curriculum</a>
+                <a href="#gallery" class="text-gray-600 hover:text-blue-900 font-medium transition">Gallery</a>
+                <a href="#programs" class="text-gray-600 hover:text-blue-900 font-medium transition">Programs</a>
+                <a href="#contact" class="bg-blue-900 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-800 transition">Contact Us</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white py-16 lg:py-24 overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            
+            <div class="flex justify-center mb-6">
+                <div class="bg-white/10 p-3 rounded-full backdrop-blur-sm border border-white/20">
+                    <img src="https://psisvh.vercel.app/logo.png" alt="Pannasastra International School Logo" class="h-20 md:h-24 w-auto object-contain drop-shadow-md">
+                </div>
+            </div>
+
+            <span class="inline-flex items-center gap-1.5 py-1.5 px-4 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 mb-6 border border-amber-500/30">
+                ឆ្នាំសិក្សា ២០២៦–២០២៧ • Academic Year 2026-2027
+            </span>
+            <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-tight text-white">
+                ចាប់បើកទទួលចុះឈ្មោះ សម្រាប់បវេសនកាលថ្មី
+            </h1>
+            <p class="mt-4 text-xl md:text-2xl font-bold text-amber-400">
+                Admissions Open for the New Academic Term!
+            </p>
+            <p class="mt-6 text-base md:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                សាលាបញ្ញាសាស្រ្តអន្តរជាតិ វណ្ណ ហុង ផ្តល់ជូនការអប់រំគុណភាពខ្ពស់ ចាប់ពីថ្នាក់មត្តេយ្យ រហូតដល់ថ្នាក់ទី១២ ទាំងកម្មវិធីសិក្សាជាតិ និងអន្តរជាតិ។
+            </p>
+            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#announcement" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-amber-500/20 transition text-center">View Start Date</a>
+                <a href="#contact" class="bg-white/10 hover:bg-white/15 text-white border border-white/20 px-8 py-3.5 rounded-xl font-semibold transition text-center backdrop-blur-sm">Contact Admissions</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Critical Alert Box (New Term & Promo) -->
+    <section id="announcement" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+            
+            <div class="flex items-center gap-4 border-b lg:border-b-0 lg:border-r border-gray-100 pb-4 lg:pb-0 lg:pr-6">
+                <div class="w-12 h-12 bg-blue-50 text-blue-900 rounded-xl flex items-center justify-center font-bold text-xl shrink-0">📅</div>
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">ថ្ងៃចូលរៀន / School Starts</h4>
+                    <p class="text-lg font-bold text-blue-900 mt-0.5">០១ កញ្ញា ២០២៦</p>
+                    <p class="text-sm font-medium text-gray-600">September 01, 2026</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 border-b lg:border-b-0 lg:border-r border-gray-100 pb-4 lg:pb-0 lg:pr-6">
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold text-xl shrink-0">🎁</div>
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">ការផ្តល់ជូនពិសេស / Special Offers</h4>
+                    <p class="text-sm font-bold text-gray-900 mt-1">ប្រូម៉ូសិនព្រមទាំងការផ្តល់ជូនបន្ថែមជាច្រើនទៀត</p>
+                    <p class="text-xs text-gray-500 mt-0.5">*ទៅតាមលក្ខខណ្ឌផ្សេងៗដែលត្រូវបានអនុវត្ត (T&C Apply)</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-stretch lg:justify-end">
+                <a href="tel:089663888" class="bg-blue-900 hover:bg-blue-800 text-white font-semibold text-center py-3 px-4 rounded-xl transition text-sm">
+                    Call Line 1: 089 663 888
+                </a>
+                <a href="tel:093815888" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-center py-3 px-4 rounded-xl transition text-sm">
+                    Call Line 2: 093 815 888
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Core Curriculum Pillars -->
+    <section id="curriculum" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">កម្មវិធីសិក្សារួមមាន / Educational Pillars</h2>
+            <div class="h-1 w-20 bg-amber-500 mx-auto mt-4 rounded-full"></div>
+            <p class="mt-4 text-gray-600">A holistic academic platform balancing core global knowledge, tech mastery, and moral values.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Pillar 1 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition">
+                <div class="w-10 h-10 bg-blue-50 text-blue-950 rounded-lg flex items-center justify-center text-lg font-bold mb-5">🇰🇭</div>
+                <h3 class="text-xl font-bold text-gray-900">កម្មវិធីសិក្សាជាតិ និងអន្តរជាតិ</h3>
+                <h4 class="text-sm text-amber-600 font-medium mt-0.5">National & International Curriculums</h4>
+                <p class="text-gray-600 text-sm mt-3 leading-relaxed">A complete bilingual structure empowering students to master their native heritage alongside rich western standards.</p>
+            </div>
+
+            <!-- Pillar 2 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition">
+                <div class="w-10 h-10 bg-blue-50 text-blue-950 rounded-lg flex items-center justify-center text-lg font-bold mb-5">🇬🇧</div>
+                <h3 class="text-xl font-bold text-gray-900">កម្មវិធី Cambridge English</h3>
+                <h4 class="text-sm text-amber-600 font-medium mt-0.5">Cambridge English Framework</h4>
+                <p class="text-gray-600 text-sm mt-3 leading-relaxed">World-class English language training optimized for international certifications, communication fluency, and deep comprehension.</p>
+            </div>
+
+            <!-- Pillar 3 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition">
+                <div class="w-10 h-10 bg-blue-50 text-blue-950 rounded-lg flex items-center justify-center text-lg font-bold mb-5">🌱</div>
+                <h3 class="text-xl font-bold text-gray-900">ថ្នាក់បំណិនជីវិត (Life Skills)</h3>
+                <h4 class="text-sm text-amber-600 font-medium mt-0.5">Practical Life Skills</h4>
+                <p class="text-gray-600 text-sm mt-3 leading-relaxed">Hands-on learning designed to foster critical thinking, financial awareness, public collaboration, and smart problem solving.</p>
+            </div>
+
+            <!-- Pillar 4 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition">
+                <div class="w-10 h-10 bg-blue-50 text-blue-950 rounded-lg flex items-center justify-center text-lg font-bold mb-5">🤝</div>
+                <h3 class="text-xl font-bold text-gray-900">ថ្នាក់បណ្តុះគុណធម៌ និងមគ្គុទ្ទេសក៍</h3>
+                <h4 class="text-sm text-amber-600 font-medium mt-0.5">Moral & Leadership Development</h4>
+                <p class="text-gray-600 text-sm mt-3 leading-relaxed">Focusing deeply on ethics, civic duties, mutual respect, and leadership qualities to raise up outstanding global citizens.</p>
+            </div>
+
+            <!-- Pillar 5 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition">
+                <div class="w-10 h-10 bg-blue-50 text-blue-950 rounded-lg flex items-center justify-center text-lg font-bold mb-5">💻</div>
+                <h3 class="text-xl font-bold text-gray-900">ចំណេះដឹងបច្ចេកវិទ្យា និងឌីជីថល</h3>
+                <h4 class="text-sm text-amber-600 font-medium mt-0.5">Technology & Digital Literacy</h4>
+                <p class="text-gray-600 text-sm mt-3 leading-relaxed">Preparing students directly for the future through early computer science foundations, clean workspace logic, and smart tech usage.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Highlights Section -->
+    <section id="gallery" class="py-20 bg-slate-100 border-t border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900">សកម្មភាព និងទិដ្ឋភាពទូទៅ / School Highlights</h2>
+                <div class="h-1 w-20 bg-amber-500 mx-auto mt-4 rounded-full"></div>
+                <p class="mt-4 text-gray-600">Take a look inside life at our campus. Discover ongoing student accomplishments, standard events, and media clips.</p>
+            </div>
+
+            <!-- Video Flex/Grid Center Layout -->
+            <div class="flex flex-col lg:flex-row justify-center items-center lg:items-end gap-8 max-w-5xl mx-auto">
+                <!-- Vertical Reel Block -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center">
+                    <div class="overflow-hidden rounded-xl bg-slate-50 flex items-center justify-center">
+                        <iframe src="https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F27239885675692471%2F&show_text=false&width=265&t=0" width="265" height="476" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+                    </div>
+                    <span class="text-xs text-gray-500 mt-3 font-semibold tracking-wider uppercase">Campus Presentation / ទិដ្ឋភាពសាលា</span>
+                </div>
+
+                <!-- Horizontal/Wide Reel Block -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center w-full lg:w-auto">
+                    <div class="overflow-hidden rounded-xl bg-slate-50 max-w-full overflow-x-auto flex items-center justify-center">
+                        <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F27055966314066479%2F&show_text=false&width=560&t=0" width="560" height="314" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+                    </div>
+                    <span class="text-xs text-gray-500 mt-3 font-semibold tracking-wider uppercase">Activities & Events / សកម្មភាពសិក្សារបស់សិស្ស</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- School Formats Grid -->
+    <section id="programs" class="py-16 bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-950">School Levels & Program Formats</h2>
+                <p class="text-sm text-gray-500 mt-2">Flexible academic structures designed around standard family constraints.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-slate-50 border border-gray-200/60 p-6 rounded-xl">
+                    <h4 class="text-lg font-bold text-gray-950">K-12 Pathways</h4>
+                    <p class="text-sm text-gray-600 mt-2">Nursery, Kindergarten, Primary, and Senior High School levels (Grades 1 to 12).</p>
+                </div>
+                <div class="bg-slate-50 border border-gray-200/60 p-6 rounded-xl">
+                    <h4 class="text-lg font-bold text-gray-950">Full-Time Track</h4>
+                    <p class="text-sm text-gray-600 mt-2">Immersive daily schedules balancing national curriculums alongside comprehensive language development goals.</p>
+                </div>
+                <div class="bg-slate-50 border border-gray-200/60 p-6 rounded-xl">
+                    <h4 class="text-lg font-bold text-gray-950">Part-Time English</h4>
+                    <p class="text-sm text-gray-600 mt-2">Targeted language classes mapping standard proficiency scales spanning Level 1 up to Level 12.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact / Admissions Channels -->
+    <section id="contact" class="bg-slate-950 text-white py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">ព័ត៌មានបន្ថែមអំពីការចុះឈ្មោះ / Contact Admissions</h2>
+                <div class="h-1 w-20 bg-amber-500 mx-auto mt-4 rounded-full"></div>
+                <p class="mt-4 text-slate-400">Connect directly with our admissions desk via phone or Telegram for speedy inquiries.</p>
+            </div>
+
+            <!-- Contact Grid Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                
+                <!-- Contact Line 1 -->
+                <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl flex flex-col justify-between hover:border-blue-500/30 transition">
+                    <div>
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-1 rounded-md">Admissions Line 1</span>
+                        <h3 class="text-xl font-bold mt-4 text-white">Call Office: 089 663 888</h3>
+                        <p class="text-sm text-slate-400 mt-2">Direct voice assistance regarding fee structures, enrollment guidelines, and general school documents.</p>
+                    </div>
+                    <div class="mt-8">
+                        <a href="tel:089663888" class="inline-flex w-full items-center justify-center bg-blue-900 hover:bg-blue-800 text-white font-bold py-3.5 px-4 rounded-xl transition gap-2 text-sm shadow-md">
+                            📞 Voice Call Line 1
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Contact Line 2 & Telegram -->
+                <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl flex flex-col justify-between hover:border-amber-500/30 transition">
+                    <div>
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest bg-amber-500/10 px-2.5 py-1 rounded-md">Admissions Line 2 & Chat</span>
+                        <h3 class="text-xl font-bold mt-4 text-white">Direct Line: 093 815 888</h3>
+                        <p class="text-sm text-slate-400 mt-2">Reach out on the phone or open instant chat handling to consult about student orientations and discounts.</p>
+                    </div>
+                    <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                        <a href="tel:093815888" class="flex-1 inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3.5 px-4 rounded-xl transition gap-2 text-sm shadow-md">
+                            📞 Phone Call
+                        </a>
+                        <a href="https://t.me/+85593815888" target="_blank" class="flex-1 inline-flex items-center justify-center bg-sky-600 hover:bg-sky-500 text-white font-bold py-3.5 px-4 rounded-xl transition gap-2 text-sm shadow-md">
+                            ✈️ Telegram Chat
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Line -->
+            <div class="mt-20 pt-8 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
+                <div class="flex items-center gap-2">
+                    <img src="https://psisvh.vercel.app/logo.png" alt="PSIS Logo" class="h-6 w-auto brightness-90">
+                    <p>&copy; 2026 Pannasastra International School VAN HONG. All rights reserved.</p>
+                </div>
+                <p class="font-medium text-slate-400 text-sm">សាលាបញ្ញាសាស្រ្តអន្តរជាតិ វណ្ណ ហុង</p>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
