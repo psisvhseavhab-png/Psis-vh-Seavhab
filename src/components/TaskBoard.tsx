@@ -677,9 +677,15 @@ export function TaskBoard() {
     async function initAuth() {
       const auth = await getAuthInstance();
       if (auth) {
-        onAuthStateChanged(auth, (u) => {
-          setCurrentUser(u);
-        });
+        onAuthStateChanged(
+          auth,
+          (u) => {
+            setCurrentUser(u);
+          },
+          (err) => {
+            console.warn("Auth observer error in TaskBoard (likely unconfigured auth):", err);
+          }
+        );
       }
     }
     initAuth();

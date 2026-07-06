@@ -48,6 +48,9 @@ export const initGoogleAuth = async (
       sessionStorage.removeItem('google_ws_access_token');
       if (onAuthFailure) onAuthFailure();
     }
+  }, (err) => {
+    console.warn("Auth state change error in initGoogleAuth:", err);
+    if (onAuthFailure) onAuthFailure();
   });
 };
 

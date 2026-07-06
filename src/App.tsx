@@ -143,6 +143,9 @@ function MainLayout() {
           }
         }
         setAuthLoading(false);
+      }, (err) => {
+        console.warn("Firebase Auth state observation failed. Fallback or unconfigured system active.", err);
+        setAuthLoading(false);
       });
     }
     initAuth();

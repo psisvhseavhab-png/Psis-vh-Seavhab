@@ -38,7 +38,7 @@ export function BotSettings() {
   const [activeTab, setActiveTab] = useState<'config' | 'verify_requests' | 'templates' | 'logs'>('config');
   const [botToken, setBotToken] = useState('');
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [testChatId, setTestChatId] = useState('');
@@ -151,6 +151,19 @@ export function BotSettings() {
     let unsubscribeAuth: (() => void) | null = null;
     
     async function init() {
+      // Check for demo user first to support local fallback access seamlessly
+      const demoUser = localStorage.getItem('demo_user');
+      if (demoUser) {
+        try {
+          const parsed = JSON.parse(demoUser);
+          setUser(parsed);
+          loadBotConfig();
+          return;
+        } catch (e) {
+          localStorage.removeItem('demo_user');
+        }
+      }
+
       const auth = await getAuthInstance();
       if (!auth) {
         setLoading(false);
@@ -158,12 +171,19 @@ export function BotSettings() {
       }
 
       unsubscribeAuth = auth.onAuthStateChanged((currUser) => {
-        setUser(currUser);
         if (currUser) {
+          setUser(currUser);
           loadBotConfig();
         } else {
-          setLoading(false);
+          // Check if we already set user via localStorage
+          const localUser = localStorage.getItem('demo_user');
+          if (!localUser) {
+            setLoading(false);
+          }
         }
+      }, (err) => {
+        console.warn("BotSettings auth check warning:", err);
+        setLoading(false);
       });
     }
 

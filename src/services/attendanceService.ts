@@ -22,30 +22,49 @@ export interface AttendanceRecord {
 
 export const attendanceService = {
   async getAttendance(date: string, classId: string): Promise<AttendanceRecord | null> {
-    const db = await getDb();
-    if (!db) return null;
+    const localKey = `attendance_${date}_${classId}`;
+    const db = await getDb().catch(() => null);
+    if (!db) {
+      const localData = localStorage.getItem(localKey);
+      return localData ? JSON.parse(localData) : null;
+    }
     try {
       const docId = `${date}_${classId}`;
       const docRef = doc(db, ATTENDANCE_COLLECTION, docId);
       const snapshot = await getDoc(docRef);
       if (snapshot.exists()) {
-        return snapshot.data() as AttendanceRecord;
+        const data = snapshot.data() as AttendanceRecord;
+        localStorage.setItem(localKey, JSON.stringify(data));
+        return data;
       }
       return null;
-    } catch (error) {
+    } catch (error: any) {
+      const isOfflineErr = error.message?.includes('offline') || error.code === 'unavailable' || !window.navigator.onLine;
+      if (isOfflineErr) {
+        const localData = localStorage.getItem(localKey);
+        return localData ? JSON.parse(localData) : null;
+      }
       handleFirestoreError(error, OperationType.GET, `${ATTENDANCE_COLLECTION}`);
       return null;
     }
   },
 
   async saveAttendance(record: AttendanceRecord) {
-    const db = await getDb();
+    const localKey = `attendance_${record.date}_${record.classId}`;
+    localStorage.setItem(localKey, JSON.stringify(record));
+
+    const db = await getDb().catch(() => null);
     if (!db) return;
     try {
       const docId = `${record.date}_${record.classId}`;
       const docRef = doc(db, ATTENDANCE_COLLECTION, docId);
       await setDoc(docRef, record);
-    } catch (error) {
+    } catch (error: any) {
+      const isOfflineErr = error.message?.includes('offline') || error.code === 'unavailable' || !window.navigator.onLine;
+      if (isOfflineErr) {
+        console.warn("Firestore offline - saved attendance to local storage cache.");
+        return;
+      }
       handleFirestoreError(error, OperationType.WRITE, `${ATTENDANCE_COLLECTION}`);
     }
   }

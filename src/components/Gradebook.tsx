@@ -63,6 +63,17 @@ const checkPerformanceDrop = (stObj: typeof initialStudents[0], currentTerm: str
   };
 };
 
+const calculateGPA = (scores: number[]) => {
+  if (scores.length === 0) return "0.00";
+  const points = scores.map(s => s >= 90 ? 4 : s >= 80 ? 3 : s >= 70 ? 2 : s >= 60 ? 1 : 0);
+  return (points.reduce((a, b) => a + b, 0) / points.length).toFixed(2);
+};
+
+const calculateAverage = (scores: number[]) => {
+  if (scores.length === 0) return 0;
+  return Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1));
+};
+
 interface GradebookProps {
   studentId?: string | null;
 }
@@ -181,17 +192,6 @@ export function Gradebook({ studentId }: GradebookProps) {
       }
       return s;
     }));
-  };
-
-  const calculateGPA = (scores: number[]) => {
-    if (scores.length === 0) return "0.00";
-    const points = scores.map(s => s >= 90 ? 4 : s >= 80 ? 3 : s >= 70 ? 2 : s >= 60 ? 1 : 0);
-    return (points.reduce((a, b) => a + b, 0) / points.length).toFixed(2);
-  };
-
-  const calculateAverage = (scores: number[]) => {
-    if (scores.length === 0) return 0;
-    return Number((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1));
   };
 
   const exportPDF = () => {

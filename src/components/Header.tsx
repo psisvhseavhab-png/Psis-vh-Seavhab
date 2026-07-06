@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Bell, User as UserIcon, Loader2, Sun, Moon, GraduationCap, Users, Shield, Compass, BookOpen } from 'lucide-react';
-import { getAuthInstance } from '@/src/lib/firebase';
+import { getAuthInstance, subscribeFirestoreStatus } from '@/src/lib/firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { mockStudents } from '../data/mockStudents';
 
@@ -28,15 +28,35 @@ const mockClassList = [
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
+  const [localUser, setLocalUser] = useState<any>(null);
   const [searchValue, setSearchValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDbOnline, setIsDbOnline] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Subscribe to real-time Firestore status
+  useEffect(() => {
+    return subscribeFirestoreStatus((online) => {
+      setIsDbOnline(online);
+    });
+  }, []);
+
   // Global Shortcut listener for Ctrl+K / Cmd+K
+  useEffect(() => {
+    const stored = localStorage.getItem('demo_user');
+    if (stored) {
+      try {
+        setLocalUser(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -53,9 +73,15 @@ export function Header() {
     async function initAuth() {
       const auth = await getAuthInstance();
       if (auth) {
-        onAuthStateChanged(auth, (u) => {
-          setUser(u);
-        });
+        onAuthStateChanged(
+          auth,
+          (u) => {
+            setUser(u);
+          },
+          (err) => {
+            console.warn("Auth observer error in Header (likely unconfigured auth):", err);
+          }
+        );
       }
     }
     initAuth();
@@ -242,10 +268,37 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-6">
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100/50 dark:border-emerald-900/10 mr-4">
-           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
-           <span className="text-[10px] font-black uppercase tracking-widest leading-none pt-0.5">Live Mode Active</span>
-        </div>
+        {/* Firestore Database Connection Status Dot */}
+        {isDbOnline ? (
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100/50 dark:border-emerald-900/10" title="Connected to Firestore database successfully. All real-time synchronization is active.">
+             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+             <span className="text-[10px] font-black uppercase tracking-widest leading-none pt-0.5">DB Connected</span>
+          </div>
+        ) : (
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-full border border-rose-100/50 dark:border-rose-900/10 animate-pulse" title="Firestore database is unreachable. Automatically using robust local offline caching.">
+             <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_#ef4444]" />
+             <span className="text-[10px] font-black uppercase tracking-widest leading-none pt-0.5">DB Offline</span>
+          </div>
+        )}
+
+        {localUser?.authWarning ? (
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 rounded-full border border-amber-100/50 dark:border-amber-900/10" title={
+            localUser.authWarning === 'configuration_not_found' ? "Firebase Authentication is not fully configured in your Firebase Console. Running in offline/local fallback mode." :
+            localUser.authWarning === 'email_password_disabled' ? "Email/Password provider is disabled in your Firebase Auth dashboard. Running in local fallback." :
+            localUser.authWarning === 'google_provider_disabled' ? "Google Sign-In is disabled in your Firebase Auth dashboard. Running in local fallback." :
+            "Unable to reach Firebase. Running in offline fallback."
+          }>
+             <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse shadow-[0_0_8px_#f59e0b]" />
+             <span className="text-[10px] font-black uppercase tracking-widest leading-none pt-0.5">
+               {localUser.authWarning === 'configuration_not_found' ? 'Firebase Auth Pending' : 'Local Fallback Active'}
+             </span>
+          </div>
+        ) : (
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100/50 dark:border-emerald-900/10">
+             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+             <span className="text-[10px] font-black uppercase tracking-widest leading-none pt-0.5">Live Mode Active</span>
+          </div>
+        )}
 
         {/* Global Dark Mode / Light Mode Theme Toggle */}
         <button 
@@ -266,10 +319,10 @@ export function Header() {
         <div className="flex items-center gap-3 pl-2">
           <div className="text-right">
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-none">
-              {user?.displayName || (user?.email === 'admin@psisvh.edu' || user?.email === 'admin@xau.news' ? 'Super Admin' : 'PSIS Member')}
+              {localUser?.displayName || user?.displayName || (user?.email === 'admin@psisvh.edu' || user?.email === 'admin@xau.news' ? 'Super Admin' : 'PSIS Member')}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-450 mt-1 uppercase tracking-widest font-black italic">
-              {user?.email === 'admin@psisvh.edu' || user?.email === 'sopheakpat01@gmail.com' || user?.email === 'admin@xau.news' ? 'Super Admin' : 'Staff/Student'}
+              {localUser?.role ? localUser.role.toUpperCase() : (user?.email === 'admin@psisvh.edu' || user?.email === 'sopheakpat01@gmail.com' || user?.email === 'admin@xau.news' ? 'Admin' : 'Staff/Student')}
             </p>
           </div>
           <div className="w-10 h-10 bg-slate-100 dark:bg-slate-950 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-800 overflow-hidden shrink-0">

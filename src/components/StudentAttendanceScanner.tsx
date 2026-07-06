@@ -12,7 +12,7 @@ interface ScannedRecord {
   name: string;
   class: string;
   timestamp: string;
-  status: 'on-time' | 'late';
+  status: 'on-time' | 'late' | 'failed';
   type: string;
   category?: string;
   aiFeedback?: string;
@@ -64,6 +64,71 @@ export const StudentAttendanceScanner: React.FC = () => {
   ];
 
   const [databaseIdentities, setDatabaseIdentities] = useState<any[]>(DEFAULT_LOOKUP_IDENTITIES);
+
+  // Fallback states for manually associating unknown ID card scans with temporary guest profiles or new enrollments
+  const [unknownScanId, setUnknownScanId] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState<string>('');
+  const [guestPurpose, setGuestPurpose] = useState<string>('');
+
+  const saveFailedScanToSystem = async (failedId: string, typeLabel: string) => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    const failedRecord: ScannedRecord = {
+      id: failedId,
+      name: "Unknown / Unenrolled Badge",
+      class: "Access Denied",
+      timestamp: timeStr,
+      status: 'failed',
+      type: typeLabel,
+      category: "Unknown",
+      aiFeedback: "Credentials verification failed. Badge ID not recognized in database."
+    };
+
+    await saveScanToSystem(failedRecord);
+    setLogs(prev => [failedRecord, ...prev]);
+  };
+
+  const handleCreateGuestScan = async () => {
+    if (!unknownScanId) return;
+    const nameToUse = guestName.trim() || `Guest (${unknownScanId})`;
+    
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    const newRecord: ScannedRecord = {
+      id: unknownScanId,
+      name: `Guest: ${nameToUse}`,
+      class: guestPurpose || 'Visitor',
+      timestamp: timeStr,
+      status: 'on-time',
+      type: activeTab === 'qr' ? 'Guest QR Scan' : 'Guest Barcode Scan',
+      category: 'Guest',
+      aiFeedback: 'Temporary visitor profile associated manually by administrator.'
+    };
+
+    // Save and log
+    await saveScanToSystem(newRecord);
+
+    setLogs(prev => [newRecord, ...prev]);
+    setLastScanned(newRecord);
+    setUnknownScanId(null);
+    setManualId('');
+
+    setTimeout(() => {
+      setLastScanned(null);
+    }, 5050);
+  };
+
+  const handleEnrollRedirect = (type: 'student' | 'employee') => {
+    setUnknownScanId(null);
+    setManualId('');
+    
+    const tabToUse = type === 'student' ? 'student-enrollment' : 'employee-profile';
+    window.dispatchEvent(new CustomEvent('navigateTab', { 
+      detail: { tab: tabToUse } 
+    }));
+  };
 
   // Dynamically fetch and merge students and employees from the services
   useEffect(() => {
@@ -142,6 +207,30 @@ export const StudentAttendanceScanner: React.FC = () => {
       }
     } catch (err) {
       console.warn("Firestore logging skipped (offline fallback active):", err);
+    }
+
+    // 3. Automated Trigger: Upon successful verification, update attendance Firestore collection with 'Present'
+    if (record.status !== 'failed' && record.category !== 'Unknown' && record.category !== 'Guest') {
+      try {
+        const db = await getDb().catch(() => null);
+        if (db) {
+          const todayStr = new Date().toISOString().split('T')[0];
+          await addDoc(collection(db, "attendance"), {
+            studentId: record.category === "Student" ? record.id : "",
+            employeeId: record.category === "Employee" ? record.id : "",
+            name: record.name,
+            class: record.class || "",
+            date: todayStr,
+            timestamp: new Date().toISOString(),
+            status: "Present",
+            type: record.category,
+            source: "Camera Scanner"
+          });
+          console.log("Attendance trigger: Recorded 'Present' status in 'attendance' collection.");
+        }
+      } catch (err) {
+        console.warn("Failed updating Firestore attendance collection:", err);
+      }
     }
   };
 
@@ -441,18 +530,31 @@ export const StudentAttendanceScanner: React.FC = () => {
 
     setScanning(true);
 
-    const found = databaseIdentities.find(s => s.id.toUpperCase() === cleanId) || {
-      id: cleanId,
-      name: cleanId.match(/(EMP|TEACH|STAFF)/i) ? `Teacher / Employee` : `Visitor / Guest ID`,
-      category: cleanId.match(/(EMP|TEACH|STAFF)/i) ? 'Employee' : 'Student',
-      classOrDept: cleanId.match(/(EMP|TEACH|STAFF)/i) ? 'Academic Dept / Campus' : 'Regular Campus Entry'
-    };
+    const isKnown = databaseIdentities.some(s => s.id.toUpperCase() === cleanId);
 
     const typeLabel = customType || (activeTab === 'qr' 
       ? 'Digital QR ID' 
       : activeTab === 'barcode' 
       ? 'Physical Barcode' 
       : 'A.I. Biometric Face ID');
+
+    if (!isKnown) {
+      setScanning(false);
+      // Log the failed scan instantly for audit trail
+      await saveFailedScanToSystem(cleanId, typeLabel);
+      // Open fallback configuration prompt
+      setUnknownScanId(cleanId);
+      setGuestName('');
+      setGuestPurpose('Visitor Check-In');
+      return;
+    }
+
+    const found = databaseIdentities.find(s => s.id.toUpperCase() === cleanId) || {
+      id: cleanId,
+      name: cleanId.match(/(EMP|TEACH|STAFF)/i) ? `Teacher / Employee` : `Visitor / Guest ID`,
+      category: cleanId.match(/(EMP|TEACH|STAFF)/i) ? 'Employee' : 'Student',
+      classOrDept: cleanId.match(/(EMP|TEACH|STAFF)/i) ? 'Academic Dept / Campus' : 'Regular Campus Entry'
+    };
 
     try {
       const response = await fetch('/api/scan-verify-record', {
@@ -1358,12 +1460,19 @@ export const StudentAttendanceScanner: React.FC = () => {
                 <CheckCircle2 size={18} className="shrink-0" />
               </div>
               <div>
-                <p className={cn(
-                  "text-[10px] font-black tracking-wider uppercase leading-none",
-                  lastScanned.category === "Employee" ? "text-purple-405" : "text-emerald-405"
-                )}>
-                  🔑 Smart Identity Verified ({lastScanned.category?.toUpperCase() || 'STUDENT'})
-                </p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className={cn(
+                    "text-[10px] font-black tracking-wider uppercase leading-none",
+                    lastScanned.category === "Employee" ? "text-purple-400" : "text-emerald-400"
+                  )}>
+                    🔑 Smart Identity Verified ({lastScanned.category?.toUpperCase() || 'STUDENT'})
+                  </p>
+                  {lastScanned.category !== 'Guest' && lastScanned.category !== 'Unknown' && (
+                    <span className="px-1.5 py-0.5 text-[6px] font-black uppercase tracking-wider bg-emerald-500 text-slate-950 rounded-full animate-pulse shrink-0">
+                      Status Verified
+                    </span>
+                  )}
+                </div>
                 <p className="text-[10px] font-bold text-slate-200 mt-1.5">
                   {lastScanned.name} (<span className="font-mono text-cyan-400">{lastScanned.id}</span>)
                 </p>
@@ -1454,6 +1563,99 @@ export const StudentAttendanceScanner: React.FC = () => {
               className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[10px] uppercase tracking-widest rounded-xl transition cursor-pointer"
             >
               Close History Log
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Unknown ID Card Fallback Dialog */}
+      {unknownScanId && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-2xl p-6 w-full max-w-md overflow-hidden flex flex-col gap-5 animate-[fadeIn_0.15s_ease-out] text-slate-800">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-amber-50 text-amber-650 rounded-xl">
+                  <AlertCircle size={18} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-sm tracking-tight uppercase">
+                    Unknown ID Badge Scanned
+                  </h3>
+                  <p className="text-[9.5px] font-semibold text-slate-500 mt-0.5">ID Scanned: <span className="font-mono text-amber-600 font-bold">{unknownScanId}</span></p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setUnknownScanId(null)}
+                className="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center text-xs font-bold transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-200/50 text-[10.5px] text-amber-850 leading-relaxed">
+                This badge credentials code is not associated with any active student or employee record in the database. Please select a fallback management flow below.
+              </div>
+
+              {/* Option 1: Temporary Guest Profile Association */}
+              <div className="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left">
+                <h4 className="text-[10px] font-black uppercase text-slate-650 tracking-widest block mb-2">Option A: Register Guest Entry</h4>
+                
+                <div className="space-y-2">
+                  <label className="text-[8.5px] font-black text-slate-450 uppercase tracking-wider block">Guest Full Name</label>
+                  <input 
+                    type="text"
+                    placeholder="Enter visitor/guest full name..."
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-slate-250 rounded-lg text-[10px] font-semibold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[8.5px] font-black text-slate-450 uppercase tracking-wider block">Purpose of Entry</label>
+                  <input 
+                    type="text"
+                    placeholder="e.g. Parents Meeting, Technical Support..."
+                    value={guestPurpose}
+                    onChange={(e) => setGuestPurpose(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-slate-250 rounded-lg text-[10px] font-semibold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  />
+                </div>
+
+                <button 
+                  onClick={handleCreateGuestScan}
+                  className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[9px] tracking-wider rounded-lg transition cursor-pointer mt-1"
+                >
+                  Associate with Guest Profile & Verify
+                </button>
+              </div>
+
+              {/* Option 2: Initiate New Enrollment */}
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left">
+                <h4 className="text-[10px] font-black uppercase text-slate-650 tracking-widest block mb-3">Option B: Initiate Full Enrollment</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button 
+                    onClick={() => handleEnrollRedirect('student')}
+                    className="py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-[8.5px] font-black uppercase tracking-wider rounded-lg transition cursor-pointer"
+                  >
+                    Enroll Student
+                  </button>
+                  <button 
+                    onClick={() => handleEnrollRedirect('employee')}
+                    className="py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-[8.5px] font-black uppercase tracking-wider rounded-lg transition cursor-pointer"
+                  >
+                    Enroll Employee
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setUnknownScanId(null)}
+              className="w-full py-2.5 border border-slate-250 hover:bg-slate-50 text-slate-600 font-extrabold text-[9.5px] uppercase tracking-wider rounded-xl transition cursor-pointer"
+            >
+              Cancel Verification Scan
             </button>
           </div>
         </div>

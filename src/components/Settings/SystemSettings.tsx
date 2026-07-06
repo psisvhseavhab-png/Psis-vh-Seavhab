@@ -28,7 +28,7 @@ interface FirestoreErrorInfo {
 
 export function SystemSettings() {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [botToken, setBotToken] = useState('');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -37,6 +37,19 @@ export function SystemSettings() {
     let unsubscribeAuth: (() => void) | null = null;
 
     async function init() {
+      // Check for demo user first to support local fallback access seamlessly
+      const demoUser = localStorage.getItem('demo_user');
+      if (demoUser) {
+        try {
+          const parsed = JSON.parse(demoUser);
+          setUser(parsed);
+          loadSettings();
+          return;
+        } catch (e) {
+          localStorage.removeItem('demo_user');
+        }
+      }
+
       const auth = await getAuthInstance();
       if (!auth) {
         setLoading(false);
@@ -44,12 +57,19 @@ export function SystemSettings() {
       }
 
       unsubscribeAuth = auth.onAuthStateChanged((currUser) => {
-        setUser(currUser);
         if (currUser) {
+          setUser(currUser);
           loadSettings();
         } else {
-          setLoading(false);
+          // Check if we already set user via localStorage
+          const localUser = localStorage.getItem('demo_user');
+          if (!localUser) {
+            setLoading(false);
+          }
         }
+      }, (err) => {
+        console.warn("SystemSettings auth check warning:", err);
+        setLoading(false);
       });
     }
 

@@ -2,6 +2,7 @@ import { initializeApp, getApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, type Auth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer, type Firestore } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, type FirebaseStorage } from 'firebase/storage';
+import firebaseConfigData from '../../firebase-applet-config.json';
 
 export enum OperationType {
   CREATE = 'create',
@@ -22,6 +23,41 @@ interface FirestoreErrorInfo {
     emailVerified?: boolean | null;
     isAnonymous?: boolean | null;
   }
+}
+
+export let isFirestoreOnline = true;
+const statusListeners = new Set<(online: boolean) => void>();
+
+export function subscribeFirestoreStatus(listener: (online: boolean) => void) {
+  statusListeners.add(listener);
+  listener(isFirestoreOnline);
+  return () => {
+    statusListeners.delete(listener);
+  };
+}
+
+export function setFirestoreOnlineStatus(status: boolean) {
+  if (isFirestoreOnline !== status) {
+    isFirestoreOnline = status;
+    statusListeners.forEach(l => l(status));
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    setFirestoreOnlineStatus(true);
+    // Verify connection by fetching a test doc
+    getDb().then(db => {
+      if (db) {
+        getDocFromServer(doc(db, 'test', 'connection'))
+          .then(() => setFirestoreOnlineStatus(true))
+          .catch(() => setFirestoreOnlineStatus(false));
+      }
+    }).catch(() => setFirestoreOnlineStatus(false));
+  });
+  window.addEventListener('offline', () => {
+    setFirestoreOnlineStatus(false);
+  });
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
@@ -45,18 +81,29 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  
+  const isOffline = errInfo.error.toLowerCase().includes('offline') || 
+                    errInfo.error.toLowerCase().includes('unavailable') || 
+                    errInfo.error.toLowerCase().includes('failed to get document') ||
+                    !window.navigator.onLine;
+
+  if (isOffline) {
+    console.log(`[Firestore Offline] Operating in offline fallback mode. (${errInfo.error})`);
+    setFirestoreOnlineStatus(false);
+  } else {
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+  }
   
   // Only throw for mutations to comply with instructions, 
   // but allow reads to fail gracefully to avoid app-wide crashes
   if ([OperationType.CREATE, OperationType.UPDATE, OperationType.DELETE, OperationType.WRITE].includes(operationType)) {
-    throw new Error(JSON.stringify(errInfo));
+    if (!isOffline) {
+      throw new Error(JSON.stringify(errInfo));
+    }
   }
 }
 
-// Try to load the config. Use a try-catch for the import to handle cases where it might not exist yet.
-let firebaseConfig: any = null;
-
+// Try to load the config.
 async function initFirebase() {
   if (getApps().length > 0) {
     const app = getApp();
@@ -66,24 +113,16 @@ async function initFirebase() {
     return { app, auth, db, storage };
   }
 
-  try {
-    // Relative to src/lib/firebase.ts, config is at root /firebase-applet-config.json
-    const module = await import('../../firebase-applet-config.json');
-    firebaseConfig = module.default || module;
-    
-    // Check if placeholder values are still there
-    if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes('INSERT_')) {
-      throw new Error("Configuration placeholder detected");
-    }
-  } catch (err) {
-    console.warn("Firebase config file not found or invalid. App will run in offline/demo mode.", err);
+  const firebaseConfig = firebaseConfigData;
+  if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.includes('INSERT_')) {
+    console.warn("Firebase config is invalid or placeholder. App will run in offline/demo mode.");
     return { app: null, auth: null, db: null, storage: null };
   }
 
   try {
     const app = initializeApp(firebaseConfig);
-    const dbId = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)' 
-      ? firebaseConfig.firestoreDatabaseId 
+    const dbId = (firebaseConfig as any).firestoreDatabaseId && (firebaseConfig as any).firestoreDatabaseId !== '(default)' 
+      ? (firebaseConfig as any).firestoreDatabaseId 
       : undefined;
     
     const db = getFirestore(app, dbId);
@@ -95,9 +134,11 @@ async function initFirebase() {
       getDocFromServer(doc(db, 'test', 'connection'))
         .then(() => {
           console.log("Firestore connection verified.");
+          setFirestoreOnlineStatus(true);
         })
         .catch(err => {
-          console.warn("Firestore connectivity warning:", err.message);
+          console.log("Firestore is offline or connection pending. Local fallback ready.");
+          setFirestoreOnlineStatus(false);
         });
     }, 1000);
 
@@ -112,15 +153,40 @@ export const googleProvider = new GoogleAuthProvider();
 
 export async function loginWithGoogle() {
   const { auth } = await initFirebase();
-  return signInWithPopup(auth, googleProvider);
+  if (!auth) {
+    throw {
+      code: 'auth/configuration-not-found',
+      message: 'Firebase Auth is not initialized.'
+    };
+  }
+  try {
+    return await signInWithPopup(auth, googleProvider);
+  } catch (error: any) {
+    if (error.code === 'auth/configuration-not-found' || error.message?.includes('configuration-not-found')) {
+      console.warn("Google Auth Configuration Warning:", error.code, error.message);
+    } else {
+      console.error("Google Auth Error Detail:", error.code, error.message);
+    }
+    throw error;
+  }
 }
 
 export async function loginWithEmail(email: string, pass: string) {
   const { auth } = await initFirebase();
+  if (!auth) {
+    throw {
+      code: 'auth/configuration-not-found',
+      message: 'Firebase Auth is not initialized.'
+    };
+  }
   try {
     return await signInWithEmailAndPassword(auth, email, pass);
   } catch (error: any) {
-    console.error("Auth Error Detail:", error.code, error.message);
+    if (error.code === 'auth/configuration-not-found' || error.message?.includes('configuration-not-found')) {
+      console.warn("Auth Configuration Warning (Expected in unconfigured development environments):", error.code, error.message);
+    } else {
+      console.error("Auth Error Detail:", error.code, error.message);
+    }
     if (error.code === 'auth/network-request-failed') {
       throw new Error("Network error: Unable to reach Firebase. This may be due to a slow connection or firewall settings.");
     }
